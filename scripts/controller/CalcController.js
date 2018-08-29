@@ -13,13 +13,13 @@ class CalcController{
 
         this.initialize();
         this.initButtonsEvents(); 
+        this.initKeyboard(); 
     }
 
     initialize(){
 
         this.setLastNumberToDisplay();
-        this.setDisplayDateTime();           
-        
+        this.setDisplayDateTime();                   
       
         setInterval(() =>{
 
@@ -27,6 +27,8 @@ class CalcController{
 
         }, 1000)
     }
+
+
 
     addEventListenerAll(element, events, fn){
         events.split(' ')        .forEach(event => {
@@ -148,10 +150,7 @@ class CalcController{
         
             if (this.isOperator(value)){
                 //trocar o operador                
-                this.setLastOperation(value);                
-            } else if (isNaN(value)) {
-                //outra coisa 
-                console.log("A" + value);
+                this.setLastOperation(value);                          
             } else {
                 this.pushOperation(value); 
                 
@@ -168,7 +167,8 @@ class CalcController{
             } else {            
                 
                 let newValue = this.getLastOperation().toString() + value.toString();
-                this.setLastOperation(parseInt(newValue));
+                //this.setLastOperation(parseFloat(newValue));
+                this.setLastOperation(newValue);
 
                 //atualizar display
                 this.setLastNumberToDisplay();
@@ -182,6 +182,24 @@ class CalcController{
 
     setError(){
         this.displayCalc = "Error";
+    }
+
+    //tratamento do "." na calculadora
+    addDot(){
+        let lastOperation = this.getLastOperation();
+
+        if ( (typeof lastOperation === 'string') && (lastOperation.split('').indexOf('.') > -1)) return;
+
+        if (this.isOperator(lastOperation) || !lastOperation){
+            this.pushOperation('0.');
+        }
+        else{
+            this.setLastOperation(lastOperation.toString() + '.');
+        }
+
+        this.setLastNumberToDisplay();
+
+        console.log(lastOperation);
     }
 
     execBtn(value){
@@ -211,7 +229,7 @@ class CalcController{
                 this.calc();
                 break;                                                                                
             case 'ponto':
-                this.addOperation('.');
+                this.addDot();
                 break;
             case '0':
             case '1':
@@ -231,6 +249,47 @@ class CalcController{
 
         }
     }
+
+    initKeyboard(){
+        document.addEventListener('keyup', e => {
+
+            switch(e.key.toLowerCase()){
+                case 'escape':
+                    this.clearAll();
+                    break;
+                case 'backspace':
+                    this.clearEntry();
+                    break;
+                case '+':
+                case '-':
+                case '*':
+                case '/':
+                case '%':
+                    this.addOperation(e.key);
+                    break;                                                
+                case 'enter':
+                case '=':
+                    this.calc();                
+                    break;                                                                
+                case '.':
+                case ',':
+                    this.addDot();
+                    break;
+                case '0':
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
+                    this.addOperation(parseInt(e.key));
+                    break;
+            }
+        });
+    }    
 
     initButtonsEvents(){
         //consulta no dom por todas as classes "g" abaixo do id "buttons" 
